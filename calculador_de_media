@@ -1,7 +1,8 @@
-;Programa: Calculador de Media
-;Author: Bruno Cotrim 
-;Versão: 1.0
+;Programa: MediumX
+;Author: Diego Fukayama, Mateus Joffre
+;Version: 1.0
 
+;MACROS
 SYS_EXIT    equ 1
 SYS_READ    equ 3
 SYS_WRITE   equ 4
@@ -9,10 +10,10 @@ STDIN       equ 0
 STDOUT      equ 1
 
 section .data
-    msg1 db "Insire o primeiro número: "
+    msg1 db "Insire o 1º número: "
     len1 equ $-msg1
 
-    msg2 db "Insira o segundo número: "
+    msg2 db "Insira o 2º número: "
     len2 equ $-msg2
 
     msg3 db "Média: "
@@ -32,14 +33,14 @@ section .text
     global _start
 
 _start:
-    ;Solicita o primeiro número
+    ;Solicita o 1º número
     mov eax, SYS_WRITE
     mov ebx, STDOUT
     mov ecx, msg1
     mov edx, len1
     int 0x80
 
-    ;Lê o primeiro número
+    ;Lê o 1º número
     mov eax, SYS_READ
     mov ebx, STDIN
     mov ecx, num1
@@ -47,14 +48,14 @@ _start:
     int  0x80
 
 
-    ;Solicita o segundo número
+    ;Solicita o 2º número
     mov eax, SYS_WRITE
     mov ebx, STDOUT
     mov ecx, msg2
     mov edx, len2
     int 0x80
 
-    ;Lê o segundo número
+    ;Lê o 2º número
     mov eax, SYS_READ
     mov ebx, STDIN
     mov ecx, num2
@@ -77,19 +78,32 @@ _start:
     mov [soma], eax
 
 .media:
+    ;Efetua a conversão dos números de string para inteiro
     movzx eax, byte [soma]
     sub eax, '0'
 
+    ;Efetua a divisão por 2 (pois são duas notas e a formula da média é: (Soma das notas) / (num. total de notas))
+    ;O operando div funciona da seguinte forma: eax / ebx
+    ;eax atualmente contém a soma dos números, então ebx terá que ter o número 2
     xor ebx, ebx
     mov bl, 2
     div bl
 
+    ;O resultado será armazenado em eax, o resto da divisão será armazenado em ebx
     add al, '0'
     mov [media], al
 
+;Verifica o tamanho do resultado
+xor esi, esi
+.loop:
+    mov edi, [media + esi]
+    cmp edi, 0
+    je .print_media
+    inc esi
+    jmp .loop
 
 .print_media:
-    ;Exibe "Média: "
+    ;Exibe "Média: [MEDIA]"
     mov eax, SYS_WRITE
     mov ebx, STDIN
     mov ecx, msg3
@@ -100,7 +114,7 @@ _start:
     mov eax, SYS_WRITE
     mov ebx, STDIN
     mov ecx, media
-    mov edx, 5
+    mov edx, esi
     int 0x80
 
     ;Imprime uma nova linha
@@ -110,6 +124,7 @@ _start:
     mov edx, lf_len
     int 0x80
 
+.exit:
     mov eax, SYS_EXIT
     xor ebx, ebx
     int 0x80
